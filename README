@@ -1,0 +1,28 @@
+#####
+## RubIRCot readme
+####
+# Author: Michal Zima, 2008
+# E-mail: xhire@tuxportal.cz
+#####
+
+== About ==
+RubIRCot is autonomic IRC bot. Its main advantage is great pluginability so is very easy extensible. However it's in early stage of development so it doesn't understand all IRC commands but basic yes. Try it and you'll see. ;c)
+
+== Requirements ==
+RubIRCot is very simple to use. Only thing you need is Ruby interpreter (I've tested version 1.8.6) and an UNIX system (because of some plugins, e.g. SVN).
+
+== Configuration ==
+Configuration is quite user-friendly and is done in the file 'conf/main.conf'.
+The only important thing is about configuring an IPv6 address as a server. You have to use '[' & ']' brackets: '[::1]'.
+
+== Running ==
+You can run RubIRCot running a command
+  $ ./rubircot.rb
+or 
+  $ ruby rubircot.rb
+since both is possible. To run it at background you have to add an ampersand to the end of the command:
+  $ ./rubircot.rb &
+because RubIRCot can't do it itself.
+
+== Getting help ==
+You can visit official RubIRCot IRC channel #rubircot on server irc.tuxportal.cz. Thank you for feedback.
