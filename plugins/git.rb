@@ -66,6 +66,13 @@ class PluginGit
 			end
 
 			if content
+				# replace HTML entities for chars
+				rss[l].gsub! /&lt;/, '<'
+				rss[l].gsub! /&gt;/, '<'
+				rss[l].gsub! /&amp;/, '&'
+				rss[l].gsub! /&quot;/, '"'
+
+				# post the message
 				$bot.put "PRIVMSG #{channel} :#{rss[l]}"
 				next
 			end
