@@ -29,7 +29,7 @@ class RubIRCot
 
   def invitation
     # eh.. what does this message means?
-    self.put "USER #{@config[:user]} RubyBot #{@config[:host]} :#{@config[:nick]}"
+    self.put "USER #{@config[:user]} RubIRCot #{@config[:host]} :#{@config[:nick]}"
     self.put "NICK #{@config[:nick]}"
     # wait until they invite us
     # :calkins.freenode.net 376 SimpleRubyBot :End of /MOTD command.

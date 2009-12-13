@@ -32,7 +32,7 @@ trap "TERM" do; exit; end
 trap "QUIT" do; exit; end
 
 ### Say "hello" to output
-puts "IRCbot v#{$version} started"
+puts "RubIRCot v#{$version} started"
 
 ### Load plugins
 $plugins = {}

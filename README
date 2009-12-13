@@ -1,7 +1,7 @@
 #####
 ## RubIRCot readme
 ####
-# Author: Michal Zima, 2008
+# Author: Michal Zima, 2008-2009
 # E-mail: xhire@tuxportal.cz
 #####
 
@@ -25,4 +25,4 @@ since both is possible. To run it at background you have to add an ampersand to 
 because RubIRCot can't do it itself.
 
 == Getting help ==
-You can visit official RubIRCot IRC channel #rubircot on server irc.tuxportal.cz. Thank you for feedback.
+You can visit official RubIRCot IRC channel #rubircot on server irc.freenode.net or irc.ipv6.freenode.net. Thank you for feedback.
