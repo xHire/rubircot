@@ -22,9 +22,9 @@ $bot = RubIRCot.new
 
 ### Handle some signals
 def exit
-	puts "RubIRCot is terminating..."
-	$bot.quit
-	Process.exit
+  puts "RubIRCot is terminating..."
+  $bot.quit
+  Process.exit
 end
 # TERM -KILL- QUIT INT
 trap "INT"  do; exit; end
@@ -37,11 +37,11 @@ puts "IRCbot v#{$version} started"
 ### Load plugins
 $plugins = {}
 Dir.foreach 'plugins' do |plugin|
-	next unless plugin =~ /^.*\.rb$/
-	require 'plugins/'+ plugin
-	plname = plugin.sub /\.rb/, ''
-	plugin = Object.module_eval("::Plugin#{plname.capitalize}", __FILE__, __LINE__).new
-	$plugins[plugin.cmd] = plugin
+  next unless plugin =~ /^.*\.rb$/
+  require 'plugins/'+ plugin
+  plname = plugin.sub /\.rb/, ''
+  plugin = Object.module_eval("::Plugin#{plname.capitalize}", __FILE__, __LINE__).new
+  $plugins[plugin.cmd] = plugin
 end
 
 ### Run the bot
