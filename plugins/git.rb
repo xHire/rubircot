@@ -2,9 +2,9 @@
 ## RubIRCot
 ###
 #> plugin/git.rb
-#~ Plugin that provides info about the latest GIT revision
+#~ Plugin that provides info about the latest GIT commit
 ####
-# Author: Michal Zima, 2008
+# Author: Michal Zima, 2008-2009
 # E-mail: xhire@tuxportal.cz
 #####
 
@@ -16,67 +16,37 @@ class PluginGit
   def initialize
     @name = 'git'
     @cmd  = 'git'
-    @help = 'get log of last revision'
+    @help = 'get log of last commit'
   end
 
   def run channel, params = ''
-    cache = '/tmp/rubircot_git.cache'
-    # get the rss page
-    system "wget #{$bot.config[:git]} -O #{cache} -q"
-    rss = IO.readlines(cache)
-    fl = rss.length - 1
-    status = 0
-    content = false
-    0.upto fl do |l|
-      # if we have all information, stop searching
-      if status == 3
-        break
-      end
+    cache = '/tmp/rubircot/git/'
+    gitdir = $bot.config[:git].sub /.*\//, ''
+    logfile = cache + gitdir + '.log'
 
-      # get author
-      ra = rss[l].match /^<author>(.*)<\/author>$/
-      if ra
-        status += 1
-        author = ra[1]
-        author = author.gsub /&lt;/, '<'
-        author = author.gsub /&gt;/, '>'
-        $bot.put "PRIVMSG #{channel} :Author: #{author}"
-        next
-      end
+    # create the directory for cache if necessary
+    system "mkdir -p #{cache}"
+    Dir.chdir cache
 
-      # get date and adjust it
-      rd = rss[l].match /^<pubDate>(.*)<\/pubDate>$/
-      if rd
-        status += 1
-        $bot.put "PRIVMSG #{channel} :Date: #{rd[1]}"
-        next
-      end
-
-      # get multiline commit message
-      if rss[l].chomp == '<pre>'
-        content = true
-        next
-      end
-
-      rc = rss[l].match /^<\/pre>.*$/
-      if rc
-        status += 1
-        content = false
-        next
-      end
-
-      if content
-        # replace HTML entities for chars
-        rss[l].gsub! /&lt;/, '<'
-        rss[l].gsub! /&gt;/, '<'
-        rss[l].gsub! /&amp;/, '&'
-        rss[l].gsub! /&quot;/, '"'
-
-        # post the message
-        $bot.put "PRIVMSG #{channel} :#{rss[l]}"
-        next
-      end
+    # get the repository
+    if File.exist?(cache + gitdir)
+      Dir.chdir gitdir
+      system "git pull"
+    else
+      system "git clone #{$bot.config[:git]} #{gitdir}"
+      Dir.chdir gitdir
     end
+
+    # get the log
+    system "git log -n 1 > #{logfile}"
+
+    # parse the log
+    log = IO.readlines logfile
+    author = log[1].match(/^Author:\s*(.*)$/)[1]
+    date   = log[2].match(/^Date:\s*(.*)$/)[1]
+    msg    = log[4].match(/^\s*(.*)$/)[1]
+
+    # send the data
+    $bot.put "PRIVMSG #{channel} :#{author} at #{date}: #{msg}"
   end
 end
-
