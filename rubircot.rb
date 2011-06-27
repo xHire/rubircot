@@ -16,8 +16,7 @@ require 'yaml'
 require 'socket'
 require 'fileutils'
 require 'lib/irc'
-require 'rubygems'
-require 'active_support/inflector'
+require 'lib/string'
 
 ### Create an instance of main IRCbot class
 $bot = RubIRCot.new
