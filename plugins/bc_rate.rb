@@ -93,9 +93,11 @@ class PluginBcRate
     end
 
     # compile all the data
-    params = 'usd' if params.nil? or params.empty? or not rate.include?(params.downcase.to_sym)
-    currency = params.downcase.to_sym
-    $bot.put "PRIVMSG #{channel} :#{currency.to_s.upcase}: [MtGox] #{round(btc[:mtgox_usd] * rate[:usd]/rate[currency])} | [Th] #{round(btc[:th_usd] * rate[:usd]/rate[currency])} | [B7] #{round(btc[:b7_usd] * rate[:usd]/rate[currency])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[currency])}"
+    params = 'usd' if params.nil? or params.empty?
+    params.split.map {|c| c.downcase.to_sym }.uniq.each do |c|
+      next unless rate.include?(c)
+      $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: [MtGox] #{round(btc[:mtgox_usd] * rate[:usd]/rate[c])} | [Th] #{round(btc[:th_usd] * rate[:usd]/rate[c])} | [B7] #{round(btc[:b7_usd] * rate[:usd]/rate[c])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[c])}"
+    end
   rescue => e
     $bot.put "PRIVMSG #{channel} :Huh, something went wrong! =-O"
     puts "[KURZ] Exception was raised: #{e.to_s}"
