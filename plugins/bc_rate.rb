@@ -93,10 +93,13 @@ class PluginBcRate
     end
 
     # compile all the data
-    params = 'usd' if params.nil? or params.empty?
+    any = false
     params.split.map {|c| c.downcase.to_sym }.uniq.each do |c|
-      next unless rate.include?(c)
+      rate.include?(c) ? any = true : next
       $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: [MtGox] #{round(btc[:mtgox_usd] * rate[:usd]/rate[c])} | [Th] #{round(btc[:th_usd] * rate[:usd]/rate[c])} | [B7] #{round(btc[:b7_usd] * rate[:usd]/rate[c])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[c])}"
+    end
+    unless any
+      $bot.put "PRIVMSG #{channel} :USD/CZK: [MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])} | [Th] #{round(btc[:th_usd])}/#{round(btc[:th_usd] * rate[:usd])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[:usd])}/#{round(btc[:bitomat_pln] * rate[:pln])}"
     end
   rescue => e
     $bot.put "PRIVMSG #{channel} :Huh, something went wrong! =-O"
