@@ -8,7 +8,7 @@
 # Author: Michal Zima, 2008
 # E-mail: xhire@tuxportal.cz
 #####
-$version = '0.0.2'
+$version = '0.0.3'
 #####
 
 ### Include libraries
@@ -16,6 +16,8 @@ require 'yaml'
 require 'socket'
 require 'fileutils'
 require 'lib/irc'
+require 'rubygems'
+require 'active_support/inflector'
 
 ### Create an instance of main IRCbot class
 $bot = RubIRCot.new
@@ -40,7 +42,7 @@ Dir.foreach 'plugins' do |plugin|
   next unless plugin =~ /^.*\.rb$/
   require 'plugins/'+ plugin
   plname = plugin.sub /\.rb/, ''
-  plugin = Object.module_eval("::Plugin#{plname.capitalize}", __FILE__, __LINE__).new
+  plugin = Object.module_eval("::Plugin#{plname.camelize}", __FILE__, __LINE__).new
   $plugins[plugin.cmd] = plugin
 end
 
