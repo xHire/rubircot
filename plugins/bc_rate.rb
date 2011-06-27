@@ -29,12 +29,14 @@ class PluginBcRate
     cache = '/tmp/rubircot/bc_rate/'
     rate = { :czk => 1.0 }
     btc = {}
+    threads = []
 
     # create the directory for cache if necessary
     system "mkdir -p #{cache}"
     Dir.chdir cache
 
     # get the currencies rates
+    threads << Thread.start do
     now = Time.now
     if File.exist?('cnb') and File.stat('cnb').mtime >= (now >= Time.local(now.year, now.month, now.day, 15) ? now : Time.local(now.year, now.month, now.day, 15) - 86400)
       rate = Marshal.load(File.open('cnb'))
@@ -51,7 +53,9 @@ class PluginBcRate
         f.puts Marshal.dump(rate)
       end
     end
+    end
 
+    threads << Thread.start do
     begin
       # obtain USD/BTC rate -- mtgox
       ticker = open("https://www.mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/0.0.2")
@@ -60,7 +64,9 @@ class PluginBcRate
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox doesn't respond."
       btc[:mtgox_usd] = 0.0
     end
+    end
 
+    threads << Thread.start do
     begin
       # obtain USD/BTC rate -- tradehill
       ticker = open("https://api.tradehill.com/APIv1/USD/Ticker")
@@ -69,20 +75,9 @@ class PluginBcRate
       $bot.put "PRIVMSG #{channel} :Sorry, tradehill doesn't respond."
       btc[:th_usd] = 0.0
     end
-
-    begin
-      # obtain USD/BTC rate -- bitcoin7
-      #ticker = open("https://www.bitcoin7.com/")
-      #usd = ticker.readlines.detect {|l| l =~ /Last price:/ }.sub(/.*<strong>([^<]*).*/, '\1').to_f
-      http = Net::HTTP.new('www.bitcoin7.com', Net::HTTP.https_default_port)
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      btc[:b7_usd] = http.start.get('/').body.match(/.*Last price: <strong>([^<]*).*/)[1].to_f
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, bitcoin7 doesn't respond."
-      btc[:b7_usd] = 0.0
     end
 
+    threads << Thread.start do
     begin
       # obtain PLN/BTC rate -- bitomat
       ticker = open("https://bitomat.pl/code/data/ticker.php")
@@ -91,12 +86,18 @@ class PluginBcRate
       $bot.put "PRIVMSG #{channel} :Sorry, bitomat doesn't respond."
       btc[:bitomat_pln] = 0.0
     end
+    end
+
+    # wait for all threads
+    threads.each do |t|
+      t.join
+    end
 
     # compile all the data
     any = false
     params.split.map {|c| c.downcase.to_sym }.uniq.each do |c|
       rate.include?(c) ? any = true : next
-      $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: [MtGox] #{round(btc[:mtgox_usd] * rate[:usd]/rate[c])} | [Th] #{round(btc[:th_usd] * rate[:usd]/rate[c])} | [B7] #{round(btc[:b7_usd] * rate[:usd]/rate[c])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[c])}"
+      $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: [MtGox] #{round(btc[:mtgox_usd] * rate[:usd]/rate[c])} | [Th] #{round(btc[:th_usd] * rate[:usd]/rate[c])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[c])}"
     end
     unless any
       $bot.put "PRIVMSG #{channel} :USD/CZK: [MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])} | [Th] #{round(btc[:th_usd])}/#{round(btc[:th_usd] * rate[:usd])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[:usd])}/#{round(btc[:bitomat_pln] * rate[:pln])}"
