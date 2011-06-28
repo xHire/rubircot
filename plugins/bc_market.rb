@@ -1,8 +1,8 @@
 #####
 ## RubIRCot
 ###
-#> plugin/bc_rate.rb
-#~ Plugin that provides current exchange rate of Bitcoin
+#> plugin/bc_market.rb
+#~ Plugin that provides further information about Bitcoin markets
 ####
 # Author: Michal Zima, 2011
 # E-mail: xhire@mujmalysvet.cz
@@ -13,22 +13,23 @@ require 'active_support/json'
 require 'csv'
 require 'open-uri'
 
-class PluginBcRate
+class PluginBcMarket
   attr_reader :name
   attr_reader :cmd
   attr_reader :help
 
   def initialize
-    @name = 'bc_rate'
-    @cmd  = 'kurz'
-    @help = 'get exchange rate of Bitcoin; use currency token as an argument'
+    @name = 'bc_market'
+    @cmd  = 'trh'
+    @help = 'get extra info about Bitcoin markets'
   end
 
   def run channel, params = ''
   begin
     cache = '/tmp/rubircot/bc_rate/'
     rate = { :czk => 1.0 }
-    btc = {}
+    buy = {}
+    sell = {}
     threads = []
 
     # create the directory for cache if necessary
@@ -57,34 +58,40 @@ class PluginBcRate
 
     threads << Thread.start do
     begin
-      # obtain USD/BTC rate -- mtgox
-      ticker = open("https://www.mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/#{$version}")
-      btc[:mtgox_usd] = ActiveSupport::JSON.decode(ticker.readline.strip)["ticker"]["last"].to_f
+      # obtain mtgox info
+      ticker = open("https://www.mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/#{$version}").readline.strip
+      buy[:mtgox] = ActiveSupport::JSON.decode(ticker)["ticker"]["buy"].to_f
+      sell[:mtgox] = ActiveSupport::JSON.decode(ticker)["ticker"]["sell"].to_f
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox doesn't respond."
-      btc[:mtgox_usd] = 0.0
+      buy[:mtgox] = 0.0
+      sell[:mtgox] = 0.0
     end
     end
 
     threads << Thread.start do
     begin
-      # obtain USD/BTC rate -- tradehill
-      ticker = open("https://api.tradehill.com/APIv1/USD/Ticker")
-      btc[:th_usd] = ActiveSupport::JSON.decode(ticker.readline.strip)["ticker"]["last"].to_f
+      # obtain tradehill info
+      ticker = open("https://api.tradehill.com/APIv1/USD/Ticker").readline.strip
+      buy[:th] = ActiveSupport::JSON.decode(ticker)["ticker"]["buy"].to_f
+      sell[:th] = ActiveSupport::JSON.decode(ticker)["ticker"]["sell"].to_f
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, tradehill doesn't respond."
-      btc[:th_usd] = 0.0
+      buy[:th] = 0.0
+      sell[:th] = 0.0
     end
     end
 
     threads << Thread.start do
     begin
-      # obtain PLN/BTC rate -- bitomat
-      ticker = open("https://bitomat.pl/code/data/ticker.php")
-      btc[:bitomat_pln] = ActiveSupport::JSON.decode(ticker.readline.strip)["ticker"]["last"]
+      # obtain bitomat info
+      ticker = open("https://bitomat.pl/code/data/ticker.php").readline.strip
+      buy[:bitomat] = ActiveSupport::JSON.decode(ticker)["ticker"]["buy"].to_f * rate[:pln] / rate[:usd]
+      sell[:bitomat] = ActiveSupport::JSON.decode(ticker)["ticker"]["sell"].to_f * rate[:pln] / rate[:usd]
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, bitomat doesn't respond."
-      btc[:bitomat_pln] = 0.0
+      buy[:bitomat] = 0.0
+      sell[:bitomat] = 0.0
     end
     end
 
@@ -94,17 +101,10 @@ class PluginBcRate
     end
 
     # compile all the data
-    any = false
-    params.split.map {|c| c.downcase.to_sym }.uniq.each do |c|
-      rate.include?(c) ? any = true : next
-      $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: [MtGox] #{round(btc[:mtgox_usd] * rate[:usd]/rate[c])} | [Th] #{round(btc[:th_usd] * rate[:usd]/rate[c])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[c])}"
-    end
-    unless any
-      $bot.put "PRIVMSG #{channel} :USD/CZK: [MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])} | [Th] #{round(btc[:th_usd])}/#{round(btc[:th_usd] * rate[:usd])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[:usd])}/#{round(btc[:bitomat_pln] * rate[:pln])}"
-    end
+    $bot.put "PRIVMSG #{channel} :buy/sell: [MtGox] #{round(buy[:mtgox])}/#{round(sell[:mtgox])} | [Th] #{round(buy[:th])}/#{round(sell[:th])} | [Bitomat] #{round(buy[:bitomat])}/#{round(sell[:bitomat])}"
   rescue => e
     $bot.put "PRIVMSG #{channel} :Huh, something went wrong! =-O"
-    puts "[KURZ] Exception was raised: #{e.to_s}"
+    puts "[TRH] Exception was raised: #{e.to_s}"
     puts e.backtrace.join("\n")
   end
   end
