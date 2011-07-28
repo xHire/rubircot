@@ -63,6 +63,9 @@ class PluginBcRate
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox doesn't respond."
       btc[:mtgox_usd] = 0.0
+    rescue OpenURI::HTTPError => err
+      $bot.put "PRIVMSG #{channel} :Sorry, mtgox shouts HTTP error: #{err}"
+      btc[:mtgox_usd] = 0.0
     end
     end
 
@@ -74,6 +77,9 @@ class PluginBcRate
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, tradehill doesn't respond."
       btc[:th_usd] = 0.0
+    rescue OpenURI::HTTPError => err
+      $bot.put "PRIVMSG #{channel} :Sorry, tradehill shouts HTTP error: #{err}"
+      btc[:th_usd] = 0.0
     end
     end
 
@@ -84,6 +90,9 @@ class PluginBcRate
       btc[:bitomat_pln] = ActiveSupport::JSON.decode(ticker.readline.strip)["ticker"]["last"]
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, bitomat doesn't respond."
+      btc[:bitomat_pln] = 0.0
+    rescue OpenURI::HTTPError => err
+      $bot.put "PRIVMSG #{channel} :Sorry, bitomat shouts HTTP error: #{err}"
       btc[:bitomat_pln] = 0.0
     end
     end
@@ -102,6 +111,10 @@ class PluginBcRate
     unless any
       $bot.put "PRIVMSG #{channel} :USD/CZK: [MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])} | [Th] #{round(btc[:th_usd])}/#{round(btc[:th_usd] * rate[:usd])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[:usd])}/#{round(btc[:bitomat_pln] * rate[:pln])}"
     end
+  rescue Timeout::Error
+    $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
+    puts "[KURZ] Exception was raised: #{e.to_s}"
+    puts e.backtrace.join("\n")
   rescue => e
     $bot.put "PRIVMSG #{channel} :Huh, something went wrong! =-O"
     puts "[KURZ] Exception was raised: #{e.to_s}"
