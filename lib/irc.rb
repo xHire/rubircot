@@ -119,6 +119,21 @@ class RubIRCot
       if text =~ /^.*VERSION.*$/
         # response
         self.put "NOTICE #{user[:nick]} :.VERSION RubIRCot."
+      elsif channel == @config[:nick]
+        text = text[1..-1] if text[0,1] == @config[:cmdchar]
+        bigcmd = text.match(/([^\s]+)[ ]?(.*)/)
+        if bigcmd
+          cmd = bigcmd[1]
+          params = bigcmd[2]
+          # search a plugin
+          if $plugins[cmd]
+            # run the plugin
+            $plugins[cmd].run user[:nick], params
+          else
+            puts '[D] !'+ cmd +'[unimplemented]'
+            self.put "PRIVMSG #{user[:nick]} :#{cmd} is not yet implemented"
+          end
+        end
       elsif text =~ /^#{@config[:nick]}:.*$/ || text =~ /^#{@config[:nick]} :.*$/
         self.put "PRIVMSG #{channel} :#{user[:nick]}: try #{@config[:cmdchar]}help"
       end
