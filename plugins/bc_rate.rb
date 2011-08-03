@@ -111,7 +111,7 @@ class PluginBcRate
     unless any
       $bot.put "PRIVMSG #{channel} :USD/CZK: [MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])} | [Th] #{round(btc[:th_usd])}/#{round(btc[:th_usd] * rate[:usd])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[:usd])}/#{round(btc[:bitomat_pln] * rate[:pln])}"
     end
-  rescue Timeout::Error
+  rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
     puts "[KURZ] Exception was raised: #{e.to_s}"
     puts e.backtrace.join("\n")
