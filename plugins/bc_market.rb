@@ -70,6 +70,10 @@ class PluginBcMarket
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox shouts HTTP error: #{err}"
       buy[:mtgox] = 0.0
       sell[:mtgox] = 0.0
+    rescue Errno::ECONNRESET
+      $bot.put "PRIVMSG #{channel} :Sorry, mtgox reset the connection"
+      buy[:mtgox] = 0.0
+      sell[:mtgox] = 0.0
     end
     end
 
@@ -85,6 +89,10 @@ class PluginBcMarket
       sell[:th] = 0.0
     rescue OpenURI::HTTPError => err
       $bot.put "PRIVMSG #{channel} :Sorry, tradehill shouts HTTP error: #{err}"
+      buy[:th] = 0.0
+      sell[:th] = 0.0
+    rescue Errno::ECONNRESET
+      $bot.put "PRIVMSG #{channel} :Sorry, tradehill reset the connection"
       buy[:th] = 0.0
       sell[:th] = 0.0
     end
@@ -104,6 +112,10 @@ class PluginBcMarket
       $bot.put "PRIVMSG #{channel} :Sorry, bitomat shouts HTTP error: #{err}"
       buy[:bitomat] = 0.0
       sell[:bitomat] = 0.0
+    rescue Errno::ECONNRESET
+      $bot.put "PRIVMSG #{channel} :Sorry, bitomat reset the connection"
+      buy[:bitomat] = 0.0
+      sell[:bitomat] = 0.0
     end
     end
 
@@ -116,11 +128,11 @@ class PluginBcMarket
     $bot.put "PRIVMSG #{channel} :buy/sell: [MtGox] #{round(buy[:mtgox])}/#{round(sell[:mtgox])} | [Th] #{round(buy[:th])}/#{round(sell[:th])} | [Bitomat] #{round(buy[:bitomat])}/#{round(sell[:bitomat])}"
   rescue Timeout::Error
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
-    puts "[KURZ] Exception was raised: #{e.to_s}"
+    puts "[KURZ] Exception was raised: #{e.exception}"
     puts e.backtrace.join("\n")
   rescue => e
     $bot.put "PRIVMSG #{channel} :Huh, something went wrong! =-O"
-    puts "[TRH] Exception was raised: #{e.to_s}"
+    puts "[TRH] Exception was raised: #{e.exception}"
     puts e.backtrace.join("\n")
   end
   end

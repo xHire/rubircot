@@ -66,6 +66,9 @@ class PluginBcRate
     rescue OpenURI::HTTPError => err
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox shouts HTTP error: #{err}"
       btc[:mtgox_usd] = 0.0
+    rescue Errno::ECONNRESET
+      $bot.put "PRIVMSG #{channel} :Sorry, mtgox reset the connection"
+      btc[:mtgox_usd] = 0.0
     end
     end
 
@@ -80,6 +83,9 @@ class PluginBcRate
     rescue OpenURI::HTTPError => err
       $bot.put "PRIVMSG #{channel} :Sorry, tradehill shouts HTTP error: #{err}"
       btc[:th_usd] = 0.0
+    rescue Errno::ECONNRESET
+      $bot.put "PRIVMSG #{channel} :Sorry, tradehill reset the connection"
+      btc[:th_usd] = 0.0
     end
     end
 
@@ -93,6 +99,9 @@ class PluginBcRate
       btc[:bitomat_pln] = 0.0
     rescue OpenURI::HTTPError => err
       $bot.put "PRIVMSG #{channel} :Sorry, bitomat shouts HTTP error: #{err}"
+      btc[:bitomat_pln] = 0.0
+    rescue Errno::ECONNRESET
+      $bot.put "PRIVMSG #{channel} :Sorry, bitomat reset the connection"
       btc[:bitomat_pln] = 0.0
     end
     end
@@ -113,11 +122,11 @@ class PluginBcRate
     end
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
-    puts "[KURZ] Exception was raised: #{e.to_s}"
+    puts "[KURZ] Exception was raised: #{e.exception}"
     puts e.backtrace.join("\n")
   rescue => e
     $bot.put "PRIVMSG #{channel} :Huh, something went wrong! =-O"
-    puts "[KURZ] Exception was raised: #{e.to_s}"
+    puts "[KURZ] Exception was raised: #{e.exception}"
     puts e.backtrace.join("\n")
   end
   end
