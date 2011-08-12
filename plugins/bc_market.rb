@@ -98,41 +98,20 @@ class PluginBcMarket
     end
     end
 
-    threads << Thread.start do
-    begin
-      # obtain bitomat info
-      ticker = open("https://bitomat.pl/code/data/ticker.php").readline.strip
-      buy[:bitomat] = ActiveSupport::JSON.decode(ticker)["ticker"]["buy"].to_f * rate[:pln] / rate[:usd]
-      sell[:bitomat] = ActiveSupport::JSON.decode(ticker)["ticker"]["sell"].to_f * rate[:pln] / rate[:usd]
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, bitomat doesn't respond."
-      buy[:bitomat] = 0.0
-      sell[:bitomat] = 0.0
-    rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, bitomat shouts HTTP error: #{err}"
-      buy[:bitomat] = 0.0
-      sell[:bitomat] = 0.0
-    rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, bitomat reset the connection"
-      buy[:bitomat] = 0.0
-      sell[:bitomat] = 0.0
-    end
-    end
-
     # wait for all threads
     threads.each do |t|
       t.join
     end
 
     # compile all the data
-    $bot.put "PRIVMSG #{channel} :buy/sell: [MtGox] #{round(buy[:mtgox])}/#{round(sell[:mtgox])} | [Th] #{round(buy[:th])}/#{round(sell[:th])} | [Bitomat] #{round(buy[:bitomat])}/#{round(sell[:bitomat])}"
+    $bot.put "PRIVMSG #{channel} :buy/sell: [MtGox] #{round(buy[:mtgox])}/#{round(sell[:mtgox])} | [Th] #{round(buy[:th])}/#{round(sell[:th])}"
   rescue Timeout::Error
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
-    puts "[KURZ] Exception was raised: #{e.exception}"
+    puts "[TRH] Exception was raised: #{e.inspect}"
     puts e.backtrace.join("\n")
   rescue => e
     $bot.put "PRIVMSG #{channel} :Huh, something went wrong! =-O"
-    puts "[TRH] Exception was raised: #{e.exception}"
+    puts "[TRH] Exception was raised: #{e.inspect}"
     puts e.backtrace.join("\n")
   end
   end

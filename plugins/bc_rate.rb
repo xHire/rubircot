@@ -89,23 +89,6 @@ class PluginBcRate
     end
     end
 
-    threads << Thread.start do
-    begin
-      # obtain PLN/BTC rate -- bitomat
-      ticker = open("https://bitomat.pl/code/data/ticker.php")
-      btc[:bitomat_pln] = ActiveSupport::JSON.decode(ticker.readline.strip)["ticker"]["last"]
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, bitomat doesn't respond."
-      btc[:bitomat_pln] = 0.0
-    rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, bitomat shouts HTTP error: #{err}"
-      btc[:bitomat_pln] = 0.0
-    rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, bitomat reset the connection"
-      btc[:bitomat_pln] = 0.0
-    end
-    end
-
     # wait for all threads
     threads.each do |t|
       t.join
@@ -115,18 +98,18 @@ class PluginBcRate
     any = false
     params.split.map {|c| c.downcase.to_sym }.uniq.each do |c|
       rate.include?(c) ? any = true : next
-      $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: [MtGox] #{round(btc[:mtgox_usd] * rate[:usd]/rate[c])} | [Th] #{round(btc[:th_usd] * rate[:usd]/rate[c])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[c])}"
+      $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: [MtGox] #{round(btc[:mtgox_usd] * rate[:usd]/rate[c])} | [Th] #{round(btc[:th_usd] * rate[:usd]/rate[c])}"
     end
     unless any
-      $bot.put "PRIVMSG #{channel} :USD/CZK: [MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])} | [Th] #{round(btc[:th_usd])}/#{round(btc[:th_usd] * rate[:usd])} | [Bitomat] #{round(btc[:bitomat_pln] * rate[:pln]/rate[:usd])}/#{round(btc[:bitomat_pln] * rate[:pln])}"
+      $bot.put "PRIVMSG #{channel} :USD/CZK: [MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])} | [Th] #{round(btc[:th_usd])}/#{round(btc[:th_usd] * rate[:usd])}"
     end
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
-    puts "[KURZ] Exception was raised: #{e.exception}"
+    puts "[KURZ] Exception was raised: #{e.inspect}"
     puts e.backtrace.join("\n")
   rescue => e
     $bot.put "PRIVMSG #{channel} :Huh, something went wrong! =-O"
-    puts "[KURZ] Exception was raised: #{e.exception}"
+    puts "[KURZ] Exception was raised: #{e.inspect}"
     puts e.backtrace.join("\n")
   end
   end
