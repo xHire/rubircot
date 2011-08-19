@@ -62,14 +62,14 @@ class PluginBcRate
       btc[:mtgox_usd] = ActiveSupport::JSON.decode(ticker.readline.strip)["ticker"]["last"].to_f
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox doesn't respond."
-      btc[:mtgox_usd] = 0.0
     rescue OpenURI::HTTPError => err
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox shouts HTTP error: #{err}"
-      btc[:mtgox_usd] = 0.0
     rescue Errno::ECONNRESET
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox reset the connection"
-      btc[:mtgox_usd] = 0.0
+    rescue OpenSSL::SSL::SSLError
+      $bot.put "PRIVMSG #{channel} :Sorry, mtgox has some SSL difficulties"
     end
+    btc[:mtgox_usd] ||= 0.0
     end
 
     threads << Thread.start do
@@ -79,14 +79,14 @@ class PluginBcRate
       btc[:th_usd] = ActiveSupport::JSON.decode(ticker.readline.strip)["ticker"]["last"].to_f
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, tradehill doesn't respond."
-      btc[:th_usd] = 0.0
     rescue OpenURI::HTTPError => err
       $bot.put "PRIVMSG #{channel} :Sorry, tradehill shouts HTTP error: #{err}"
-      btc[:th_usd] = 0.0
     rescue Errno::ECONNRESET
       $bot.put "PRIVMSG #{channel} :Sorry, tradehill reset the connection"
-      btc[:th_usd] = 0.0
+    rescue OpenSSL::SSL::SSLError
+      $bot.put "PRIVMSG #{channel} :Sorry, tradehill has some SSL difficulties"
     end
+    btc[:th_usd] ||= 0.0
     end
 
     # wait for all threads

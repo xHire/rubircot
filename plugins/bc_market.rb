@@ -64,17 +64,15 @@ class PluginBcMarket
       sell[:mtgox] = ActiveSupport::JSON.decode(ticker)["ticker"]["sell"].to_f
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox doesn't respond."
-      buy[:mtgox] = 0.0
-      sell[:mtgox] = 0.0
     rescue OpenURI::HTTPError => err
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox shouts HTTP error: #{err}"
-      buy[:mtgox] = 0.0
-      sell[:mtgox] = 0.0
     rescue Errno::ECONNRESET
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox reset the connection"
-      buy[:mtgox] = 0.0
-      sell[:mtgox] = 0.0
+    rescue OpenSSL::SSL::SSLError
+      $bot.put "PRIVMSG #{channel} :Sorry, mtgox has some SSL difficulties"
     end
+    buy[:mtgox]   ||= 0.0
+    sell[:mtgox]  ||= 0.0
     end
 
     threads << Thread.start do
@@ -85,17 +83,15 @@ class PluginBcMarket
       sell[:th] = ActiveSupport::JSON.decode(ticker)["ticker"]["sell"].to_f
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, tradehill doesn't respond."
-      buy[:th] = 0.0
-      sell[:th] = 0.0
     rescue OpenURI::HTTPError => err
       $bot.put "PRIVMSG #{channel} :Sorry, tradehill shouts HTTP error: #{err}"
-      buy[:th] = 0.0
-      sell[:th] = 0.0
     rescue Errno::ECONNRESET
       $bot.put "PRIVMSG #{channel} :Sorry, tradehill reset the connection"
-      buy[:th] = 0.0
-      sell[:th] = 0.0
+    rescue OpenSSL::SSL::SSLError
+      $bot.put "PRIVMSG #{channel} :Sorry, tradehill has some SSL difficulties"
     end
+    buy[:th]  ||= 0.0
+    sell[:th] ||= 0.0
     end
 
     # wait for all threads
