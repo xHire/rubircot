@@ -4,7 +4,7 @@
 #> plugin/bc_market.rb
 #~ Plugin that provides further information about Bitcoin markets
 ####
-# Author: Michal Zima, 2011
+# Author: Michal Zima, 2012
 # E-mail: xhire@mujmalysvet.cz
 #####
 
@@ -57,19 +57,25 @@ class PluginBcMarket
     end
 
     threads << Thread.start do
+    2.times do
     begin
       # obtain mtgox info
-      ticker = open("https://www.mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/#{$version}").readline.strip
+      ticker = open("https://mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/#{$version}").readline.strip
       buy[:mtgox] = ActiveSupport::JSON.decode(ticker)["ticker"]["buy"].to_f
       sell[:mtgox] = ActiveSupport::JSON.decode(ticker)["ticker"]["sell"].to_f
+      break
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox doesn't respond."
+      break
     rescue OpenURI::HTTPError => err
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox shouts HTTP error: #{err}"
+      break
     rescue Errno::ECONNRESET
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox reset the connection"
     rescue OpenSSL::SSL::SSLError
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox has some SSL difficulties"
+      break
+    end
     end
     buy[:mtgox]   ||= 0.0
     sell[:mtgox]  ||= 0.0

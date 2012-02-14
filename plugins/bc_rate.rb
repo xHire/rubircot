@@ -4,7 +4,7 @@
 #> plugin/bc_rate.rb
 #~ Plugin that provides current exchange rate of Bitcoin
 ####
-# Author: Michal Zima, 2011
+# Author: Michal Zima, 2012
 # E-mail: xhire@mujmalysvet.cz
 #####
 
@@ -56,18 +56,23 @@ class PluginBcRate
     end
 
     threads << Thread.start do
+    2.times do
     begin
       # obtain USD/BTC rate -- mtgox
-      ticker = open("https://www.mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/#{$version}")
+      ticker = open("https://mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/#{$version}")
       btc[:mtgox_usd] = ActiveSupport::JSON.decode(ticker.readline.strip)["ticker"]["last"].to_f
+      break
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox doesn't respond."
+      break
     rescue OpenURI::HTTPError => err
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox shouts HTTP error: #{err}"
+      break
     rescue Errno::ECONNRESET
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox reset the connection"
     rescue OpenSSL::SSL::SSLError
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox has some SSL difficulties"
+      break
     end
     btc[:mtgox_usd] ||= 0.0
     end
