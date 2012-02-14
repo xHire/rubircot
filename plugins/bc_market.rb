@@ -81,32 +81,13 @@ class PluginBcMarket
     sell[:mtgox]  ||= 0.0
     end
 
-    threads << Thread.start do
-    begin
-      # obtain tradehill info
-      ticker = open("https://api.tradehill.com/APIv1/USD/Ticker").readline.strip
-      buy[:th] = ActiveSupport::JSON.decode(ticker)["ticker"]["buy"].to_f
-      sell[:th] = ActiveSupport::JSON.decode(ticker)["ticker"]["sell"].to_f
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, tradehill doesn't respond."
-    rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, tradehill shouts HTTP error: #{err}"
-    rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, tradehill reset the connection"
-    rescue OpenSSL::SSL::SSLError
-      $bot.put "PRIVMSG #{channel} :Sorry, tradehill has some SSL difficulties"
-    end
-    buy[:th]  ||= 0.0
-    sell[:th] ||= 0.0
-    end
-
     # wait for all threads
     threads.each do |t|
       t.join
     end
 
     # compile all the data
-    $bot.put "PRIVMSG #{channel} :buy/sell: [MtGox] #{round(buy[:mtgox])}/#{round(sell[:mtgox])} | [Th] #{round(buy[:th])}/#{round(sell[:th])}"
+    $bot.put "PRIVMSG #{channel} :buy/sell: [MtGox] #{round(buy[:mtgox])}/#{round(sell[:mtgox])}"
   rescue Timeout::Error
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
     puts "[TRH] Exception was raised: #{e.inspect}"

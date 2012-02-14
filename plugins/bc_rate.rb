@@ -74,24 +74,8 @@ class PluginBcRate
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox has some SSL difficulties"
       break
     end
+    end
     btc[:mtgox_usd] ||= 0.0
-    end
-
-    threads << Thread.start do
-    begin
-      # obtain USD/BTC rate -- tradehill
-      ticker = open("https://api.tradehill.com/APIv1/USD/Ticker")
-      btc[:th_usd] = ActiveSupport::JSON.decode(ticker.readline.strip)["ticker"]["last"].to_f
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, tradehill doesn't respond."
-    rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, tradehill shouts HTTP error: #{err}"
-    rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, tradehill reset the connection"
-    rescue OpenSSL::SSL::SSLError
-      $bot.put "PRIVMSG #{channel} :Sorry, tradehill has some SSL difficulties"
-    end
-    btc[:th_usd] ||= 0.0
     end
 
     # wait for all threads
@@ -103,10 +87,10 @@ class PluginBcRate
     any = false
     params.split.map {|c| c.downcase.to_sym }.uniq.each do |c|
       rate.include?(c) ? any = true : next
-      $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: [MtGox] #{round(btc[:mtgox_usd] * rate[:usd]/rate[c])} | [Th] #{round(btc[:th_usd] * rate[:usd]/rate[c])}"
+      $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: [MtGox] #{round(btc[:mtgox_usd] * rate[:usd]/rate[c])}"
     end
     unless any
-      $bot.put "PRIVMSG #{channel} :USD/CZK: [MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])} | [Th] #{round(btc[:th_usd])}/#{round(btc[:th_usd] * rate[:usd])}"
+      $bot.put "PRIVMSG #{channel} :USD/CZK: [MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])}"
     end
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
