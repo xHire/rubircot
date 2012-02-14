@@ -20,6 +20,6 @@ class PluginMe
   end
 
   def run channel, params = ''
-    $bot.put "PRIVMSG #{channel} :\001ACTION is RubIRCot v#{$version} -- friendly IRC bot written in Ruby :c)\001"
+    $bot.put "PRIVMSG #{channel} :\001ACTION is RubIRCot v#{$version} -- friendly IRC bot written in Ruby. Please #{$bot.config[:cmdchar]}donate\001"
   end
 end
