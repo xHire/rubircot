@@ -85,13 +85,54 @@ class PluginBcMarket
     sell[:mtgox]  ||= 0.0
     end
 
+    threads << Thread.start do
+    begin
+      # obtain bitstamp info
+      ticker = open('https://www.bitstamp.net/api/ticker/').readline.strip
+      buy[:bs] = ActiveSupport::JSON.decode(ticker)['bid'].to_f
+      sell[:bs] = ActiveSupport::JSON.decode(ticker)['ask'].to_f
+    rescue Errno::ETIMEDOUT
+      $bot.put "PRIVMSG #{channel} :Sorry, bitstamp doesn't respond."
+    rescue OpenURI::HTTPError => err
+      $bot.put "PRIVMSG #{channel} :Sorry, bitstamp shouts HTTP error: #{err}"
+    rescue Errno::ECONNRESET
+      $bot.put "PRIVMSG #{channel} :Sorry, bitstamp reset the connection"
+    rescue OpenSSL::SSL::SSLError
+      $bot.put "PRIVMSG #{channel} :Sorry, bitstamp has some SSL difficulties"
+    end
+    buy[:bs]  ||= 0.0
+    sell[:bs] ||= 0.0
+    end
+
+    threads << Thread.start do
+    begin
+      # obtain btc24 info
+      ticker = open('https://bitcoin-24.com/api/EUR/ticker.json').readline.strip
+      buy[:b24] = ActiveSupport::JSON.decode(ticker)['bid'].to_f
+      sell[:b24] = ActiveSupport::JSON.decode(ticker)['ask'].to_f
+    rescue Errno::ETIMEDOUT
+      $bot.put "PRIVMSG #{channel} :Sorry, btc24 doesn't respond."
+    rescue OpenURI::HTTPError => err
+      $bot.put "PRIVMSG #{channel} :Sorry, btc24 shouts HTTP error: #{err}"
+    rescue Errno::ECONNRESET
+      $bot.put "PRIVMSG #{channel} :Sorry, btc24 reset the connection"
+    rescue OpenSSL::SSL::SSLError
+      $bot.put "PRIVMSG #{channel} :Sorry, btc24 has some SSL difficulties"
+    end
+    buy[:b24]  ||= 0.0
+    sell[:b24] ||= 0.0
+    end
+
     # wait for all threads
     threads.each do |t|
       t.join
     end
 
     # compile all the data
-    $bot.put "PRIVMSG #{channel} :buy/sell: [MtGox] #{round(buy[:mtgox])}/#{round(sell[:mtgox])}"
+    $bot.put "PRIVMSG #{channel} :buy/sell: " +
+      "[MtGox] #{round(buy[:mtgox])}/#{round(sell[:mtgox])} | " +
+      "[Bitstamp] #{round(buy[:bs])}/#{round(sell[:bs])} | " +
+      "[BTC24] #{round(buy[:b24])}/#{round(sell[:b24])}"
   rescue Timeout::Error
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
     puts "[TRH] Exception was raised: #{e.inspect}"
