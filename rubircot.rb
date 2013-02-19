@@ -5,18 +5,18 @@
 #> rubircot.rb
 #~ This is core program of RubIRCot
 ####
-# Author: Michal Zima, 2008
+# Author: Michal Zima, 2013
 # E-mail: xhire@tuxportal.cz
 #####
-$version = '0.0.3'
+$version = '0.0.4'
 #####
 
 ### Include libraries
 require 'yaml'
 require 'socket'
 require 'fileutils'
-require 'lib/irc'
-require 'lib/string'
+require './lib/irc'
+require './lib/string'
 
 ### Create an instance of main IRCbot class
 $bot = RubIRCot.new
@@ -39,7 +39,7 @@ puts "RubIRCot v#{$version} started"
 $plugins = {}
 Dir.foreach 'plugins' do |plugin|
   next unless plugin =~ /^.*\.rb$/
-  require 'plugins/'+ plugin
+  require './plugins/'+ plugin
   plname = plugin.sub /\.rb/, ''
   plugin = Object.module_eval("::Plugin#{plname.camelize}", __FILE__, __LINE__).new
   $plugins[plugin.cmd] = plugin
@@ -49,4 +49,4 @@ end
 # connect and join
 $bot.connect
 # listen for all messages and react to them
-$bot.get while(1)
+loop { $bot.get }

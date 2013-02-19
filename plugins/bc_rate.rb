@@ -4,7 +4,7 @@
 #> plugin/bc_rate.rb
 #~ Plugin that provides current exchange rate of Bitcoin
 ####
-# Author: Michal Zima, 2012
+# Author: Michal Zima, 2013
 # E-mail: xhire@mujmalysvet.cz
 #####
 
@@ -42,7 +42,11 @@ class PluginBcRate
       rate = Marshal.load(File.open('cnb'))
     else
       raw = open("http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt")
-      csv = CSV::Reader.parse(raw, '|')
+      if RUBY_VERSION >= '1.9'
+        csv = CSV.parse(raw, :col_sep => '|')
+      else
+        csv = CSV::Reader.parse(raw, '|')
+      end
       2.times do
         csv.shift
       end
