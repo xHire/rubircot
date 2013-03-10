@@ -13,6 +13,7 @@ $version = '0.0.4'
 
 ### Include libraries
 require 'yaml'
+require 'timeout'
 require 'socket'
 require 'fileutils'
 require './lib/irc'
