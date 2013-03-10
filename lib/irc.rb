@@ -37,6 +37,7 @@ class RubIRCot
     until code == '376'
       msg = nil
       msg = self.recv.match(/^:(\S+) (\d{3}) (\w*) :(.*)$/) while msg == nil
+      @server = msg[1]
       code = msg[2]
     end
   end
@@ -151,5 +152,12 @@ class RubIRCot
 
   def join channel
     self.put "JOIN ##{channel}"
+  end
+
+  def ping
+    # PING rajaniemi.freenode.net
+    self.put "PING #{@server}"
+    msg = self.recv
+    #res = msg.match /^:([^\s]+) (PONG) ([^\s]*) :(.*)$/
   end
 end

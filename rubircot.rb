@@ -46,7 +46,31 @@ Dir.foreach 'plugins' do |plugin|
 end
 
 ### Run the bot
-# connect and join
-$bot.connect
-# listen for all messages and react to them
-loop { $bot.get }
+begin
+  # connect and join
+  $bot.connect
+  # listen for all messages and react to them
+  loop do
+    begin
+      timeout 300 do
+        $bot.get
+      end
+    rescue Timeout::Error
+      timeout 5 do
+        $bot.ping
+      end
+    end
+  end
+rescue Timeout::Error
+  puts "Connection timeouted. Reconnecting..."
+  $bot.quit
+  retry
+rescue Errno::ECONNRESET
+  puts "Connection reset by peer. Reconnecting..."
+  $bot.quit
+  retry
+rescue EOFError, Errno::EPIPE
+  puts "Error when reading from socket. Reconnecting..."
+  $bot.quit
+  retry
+end
