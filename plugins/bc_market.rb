@@ -64,7 +64,7 @@ class PluginBcMarket
     2.times do
     begin
       # obtain mtgox info
-      ticker = open("https://mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/#{$version}").readline.strip
+      ticker = open("https://data.mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/#{$version}").readline.strip
       buy[:mtgox] = ActiveSupport::JSON.decode(ticker)["ticker"]["buy"].to_f
       sell[:mtgox] = ActiveSupport::JSON.decode(ticker)["ticker"]["sell"].to_f
       break

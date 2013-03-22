@@ -63,7 +63,7 @@ class PluginBcRate
     2.times do
     begin
       # obtain USD/BTC rate -- mtgox
-      ticker = open("https://mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/#{$version}")
+      ticker = open("https://data.mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/#{$version}")
       btc[:mtgox_usd] = ActiveSupport::JSON.decode(ticker.readline.strip)["ticker"]["last"].to_f
       break
     rescue Errno::ETIMEDOUT
