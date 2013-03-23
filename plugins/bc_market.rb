@@ -153,7 +153,7 @@ class PluginBcMarket
       "[Bitstamp] #{round(buy[:bs])}/#{round(sell[:bs])} | " +
       "[BTC24] #{round(buy[:b24])}/#{round(sell[:b24])} | " +
       "[B-C] #{round(buy[:bc])}/#{round(sell[:bc])}"
-  rescue Timeout::Error
+  rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
     puts "[TRH] Exception was raised: #{e.inspect}"
     puts e.backtrace.join("\n")
