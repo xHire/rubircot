@@ -123,25 +123,6 @@ class PluginBcMarket
     sell[:b24] ||= 0.0
     end
 
-    threads << Thread.start do
-    begin
-      # obtain bitcoin-central info
-      ticker = open('https://bitcoin-central.net/api/v1/ticker').readline.strip
-      buy[:bc] = ActiveSupport::JSON.decode(ticker)['bid'].to_f
-      sell[:bc] = ActiveSupport::JSON.decode(ticker)['ask'].to_f
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, bitcoin-central doesn't respond."
-    rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, bitcoin-central shouts HTTP error: #{err}"
-    rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, bitcoin-central reset the connection"
-    rescue OpenSSL::SSL::SSLError
-      $bot.put "PRIVMSG #{channel} :Sorry, bitcoin-central has some SSL difficulties"
-    end
-    buy[:bc]  ||= 0.0
-    sell[:bc] ||= 0.0
-    end
-
     # wait for all threads
     threads.each do |t|
       t.join
@@ -151,8 +132,7 @@ class PluginBcMarket
     $bot.put "PRIVMSG #{channel} :buy/sell: " +
       "[MtGox] #{round(buy[:mtgox])}/#{round(sell[:mtgox])} | " +
       "[Bitstamp] #{round(buy[:bs])}/#{round(sell[:bs])} | " +
-      "[BTC24] #{round(buy[:b24])}/#{round(sell[:b24])} | " +
-      "[B-C] #{round(buy[:bc])}/#{round(sell[:bc])}"
+      "[BTC24] #{round(buy[:b24])}/#{round(sell[:b24])}"
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
     puts "[TRH] Exception was raised: #{e.inspect}"
