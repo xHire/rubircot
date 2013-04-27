@@ -64,9 +64,9 @@ class PluginBcMarket
     2.times do
     begin
       # obtain mtgox info
-      ticker = open("https://data.mtgox.com/code/ticker.php", "User-Agent" => "Mozilla/5.0 (Linux) RubIRCot/#{$version}").readline.strip
-      buy[:mtgox] = ActiveSupport::JSON.decode(ticker)["ticker"]["buy"].to_f
-      sell[:mtgox] = ActiveSupport::JSON.decode(ticker)["ticker"]["sell"].to_f
+      ticker = open('https://data.mtgox.com/api/1/BTCUSD/ticker', 'User-Agent' => "Mozilla/5.0 (Linux) RubIRCot/#{$version}").readline.strip
+      buy[:mtgox] = ActiveSupport::JSON.decode(ticker)['return']['buy']['value'].to_f
+      sell[:mtgox] = ActiveSupport::JSON.decode(ticker)['return']['sell']['value'].to_f
       break
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, mtgox doesn't respond."
