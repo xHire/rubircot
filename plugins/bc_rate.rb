@@ -99,23 +99,6 @@ class PluginBcRate
     btc[:bs_usd] ||= 0.0
     end
 
-    threads << Thread.start do
-    begin
-      # obtain EUR/BTC rate -- btc24
-      ticker = open('https://bitcoin-24.com/api/EUR/ticker.json')
-      btc[:b24_eur] = ActiveSupport::JSON.decode(ticker.readline.strip)['last'].to_f
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, btc24 doesn't respond."
-    rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, btc24 shouts HTTP error: #{err}"
-    rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, btc24 reset the connection"
-    rescue OpenSSL::SSL::SSLError
-      $bot.put "PRIVMSG #{channel} :Sorry, btc24 has some SSL difficulties"
-    end
-    btc[:b24_eur] ||= 0.0
-    end
-
     # wait for all threads
     threads.each do |t|
       t.join
@@ -127,14 +110,12 @@ class PluginBcRate
       rate.include?(c) ? any = true : next
       $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: " +
         "[MtGox] #{round(btc[:mtgox_usd] * rate[:usd] / rate[c])} | " +
-        "[Bitstamp] #{round(btc[:bs_usd] * rate[:usd] / rate[c])} | " +
-        "[BTC24] #{round(btc[:b24_eur] * rate[:eur] / rate[c])}"
+        "[Bitstamp] #{round(btc[:bs_usd] * rate[:usd] / rate[c])} | "
     end
     unless any
       $bot.put "PRIVMSG #{channel} :USD/CZK: " +
         "[MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])} | " +
-        "[Bitstamp] #{round(btc[:bs_usd])}/#{round(btc[:bs_usd] * rate[:usd])} | " +
-        "[BTC24] #{round(btc[:b24_eur] * rate[:eur] / rate[:usd])}/#{round(btc[:b24_eur] * rate[:eur])}"
+        "[Bitstamp] #{round(btc[:bs_usd])}/#{round(btc[:bs_usd] * rate[:usd])} | "
     end
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
