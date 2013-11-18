@@ -116,6 +116,23 @@ class PluginBcRate
     btc[:btce_usd] ||= 0.0
     end
 
+    threads << Thread.start do
+    begin
+      # obtain CNY/BTC rate -- btcchina
+      ticker = open('https://vip.btcchina.com/bc/ticker')
+      btc[:btcchina_cny] = ActiveSupport::JSON.decode(ticker.readline.strip)['ticker']['last'].to_f
+    rescue Errno::ETIMEDOUT
+      $bot.put "PRIVMSG #{channel} :Sorry, btcchina doesn't respond."
+    rescue OpenURI::HTTPError => err
+      $bot.put "PRIVMSG #{channel} :Sorry, btcchina shouts HTTP error: #{err}"
+    rescue Errno::ECONNRESET
+      $bot.put "PRIVMSG #{channel} :Sorry, btcchina reset the connection"
+    rescue OpenSSL::SSL::SSLError
+      $bot.put "PRIVMSG #{channel} :Sorry, btcchina has some SSL difficulties"
+    end
+    btc[:btcchina_cny] ||= 0.0
+    end
+
     # wait for all threads
     threads.each do |t|
       t.join
@@ -128,13 +145,15 @@ class PluginBcRate
       $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: " +
         "[MtGox] #{round(btc[:mtgox_usd] * rate[:usd] / rate[c])} | " +
         "[Bitstamp] #{round(btc[:bs_usd] * rate[:usd] / rate[c])} | " +
-        "[BTC-e] #{round(btc[:btce_usd] * rate[:usd] / rate[c])}"
+        "[BTC-e] #{round(btc[:btce_usd] * rate[:usd] / rate[c])} | " +
+        "[BTC China] #{round(btc[:btcchina_cny] * rate[:cny] / rate[c])}"
     end
     unless any
       $bot.put "PRIVMSG #{channel} :USD/CZK: " +
         "[MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])} | " +
         "[Bitstamp] #{round(btc[:bs_usd])}/#{round(btc[:bs_usd] * rate[:usd])} | " +
-        "[BTC-e] #{round(btc[:btce_usd])}/#{round(btc[:btce_usd] * rate[:usd])}"
+        "[BTC-e] #{round(btc[:btce_usd])}/#{round(btc[:btce_usd] * rate[:usd])} | " +
+        "[BTC China] #{round(btc[:btcchina_cny] * rate[:cny] / rate[:usd])}/#{round(btc[:btcchina_cny] * rate[:cny])}"
     end
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
