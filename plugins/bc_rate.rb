@@ -129,6 +129,8 @@ class PluginBcRate
       $bot.put "PRIVMSG #{channel} :Sorry, btcchina reset the connection"
     rescue OpenSSL::SSL::SSLError
       $bot.put "PRIVMSG #{channel} :Sorry, btcchina has some SSL difficulties"
+    rescue EOFError
+      $bot.put "PRIVMSG #{channel} :Sorry, btcchina return empty ticker"
     end
     btc[:btcchina_cny] ||= 0.0
     end
