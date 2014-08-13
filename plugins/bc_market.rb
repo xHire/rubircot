@@ -61,31 +61,6 @@ class PluginBcMarket
     end
 
     threads << Thread.start do
-    2.times do
-    begin
-      # obtain mtgox info
-      ticker = open('https://data.mtgox.com/api/1/BTCUSD/ticker', 'User-Agent' => "Mozilla/5.0 (Linux) RubIRCot/#{$version}").readline.strip
-      buy[:mtgox] = ActiveSupport::JSON.decode(ticker)['return']['buy']['value'].to_f
-      sell[:mtgox] = ActiveSupport::JSON.decode(ticker)['return']['sell']['value'].to_f
-      break
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, mtgox doesn't respond."
-      break
-    rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, mtgox shouts HTTP error: #{err}"
-      break
-    rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, mtgox reset the connection"
-    rescue OpenSSL::SSL::SSLError
-      $bot.put "PRIVMSG #{channel} :Sorry, mtgox has some SSL difficulties"
-      break
-    end
-    end
-    buy[:mtgox]   ||= 0.0
-    sell[:mtgox]  ||= 0.0
-    end
-
-    threads << Thread.start do
     begin
       # obtain bitstamp info
       ticker = open('https://www.bitstamp.net/api/ticker/').readline.strip
@@ -130,7 +105,6 @@ class PluginBcMarket
 
     # compile all the data
     $bot.put "PRIVMSG #{channel} :buy/sell: " +
-      "[MtGox] #{round(buy[:mtgox])}/#{round(sell[:mtgox])} | " +
       "[Bitstamp] #{round(buy[:bs])}/#{round(sell[:bs])} | " +
       "[BTC-e] #{round(buy[:btce])}/#{round(sell[:btce])}"
   rescue Timeout::Error => e

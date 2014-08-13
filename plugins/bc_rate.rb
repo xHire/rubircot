@@ -60,29 +60,6 @@ class PluginBcRate
     end
 
     threads << Thread.start do
-    2.times do
-    begin
-      # obtain USD/BTC rate -- mtgox
-      ticker = open('https://data.mtgox.com/api/1/BTCUSD/ticker', 'User-Agent' => "Mozilla/5.0 (Linux) RubIRCot/#{$version}")
-      btc[:mtgox_usd] = ActiveSupport::JSON.decode(ticker.readline.strip)['return']['last_local']['value'].to_f
-      break
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, mtgox doesn't respond."
-      break
-    rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, mtgox shouts HTTP error: #{err}"
-      break
-    rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, mtgox reset the connection"
-    rescue OpenSSL::SSL::SSLError
-      $bot.put "PRIVMSG #{channel} :Sorry, mtgox has some SSL difficulties"
-      break
-    end
-    end
-    btc[:mtgox_usd] ||= 0.0
-    end
-
-    threads << Thread.start do
     begin
       # obtain USD/BTC rate -- bitstamp
       ticker = open('https://www.bitstamp.net/api/ticker/')
@@ -126,13 +103,11 @@ class PluginBcRate
     params.split.map {|c| c.downcase.to_sym }.uniq.each do |c|
       rate.include?(c) ? any = true : next
       $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: " +
-        "[MtGox] #{round(btc[:mtgox_usd] * rate[:usd] / rate[c])} | " +
         "[Bitstamp] #{round(btc[:bs_usd] * rate[:usd] / rate[c])} | " +
         "[BTC-e] #{round(btc[:btce_usd] * rate[:usd] / rate[c])}"
     end
     unless any
       $bot.put "PRIVMSG #{channel} :USD/CZK: " +
-        "[MtGox] #{round(btc[:mtgox_usd])}/#{round(btc[:mtgox_usd] * rate[:usd])} | " +
         "[Bitstamp] #{round(btc[:bs_usd])}/#{round(btc[:bs_usd] * rate[:usd])} | " +
         "[BTC-e] #{round(btc[:btce_usd])}/#{round(btc[:btce_usd] * rate[:usd])}"
     end
