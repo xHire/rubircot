@@ -93,6 +93,23 @@ class PluginBcRate
     btc[:btce_usd] ||= 0.0
     end
 
+    threads << Thread.start do
+    begin
+      # obtain EUR/BTC rate -- kraken
+      ticker = open('https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR').readline.strip
+      btc[:kraken_eur] = ActiveSupport::JSON.decode(ticker)['result']['XXBTZEUR']['c'][0].to_f
+    rescue Errno::ETIMEDOUT
+      $bot.put "PRIVMSG #{channel} :Sorry, kraken doesn't respond."
+    rescue OpenURI::HTTPError => err
+      $bot.put "PRIVMSG #{channel} :Sorry, kraken shouts HTTP error: #{err}"
+    rescue Errno::ECONNRESET
+      $bot.put "PRIVMSG #{channel} :Sorry, kraken reset the connection"
+    rescue OpenSSL::SSL::SSLError
+      $bot.put "PRIVMSG #{channel} :Sorry, kraken has some SSL difficulties"
+    end
+    btc[:kraken_eur] ||= 0.0
+    end
+
     # wait for all threads
     threads.each do |t|
       t.join
@@ -104,12 +121,14 @@ class PluginBcRate
       rate.include?(c) ? any = true : next
       $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: " +
         "[Bitstamp] #{round(btc[:bs_usd] * rate[:usd] / rate[c])} | " +
-        "[BTC-e] #{round(btc[:btce_usd] * rate[:usd] / rate[c])}"
+        "[BTC-e] #{round(btc[:btce_usd] * rate[:usd] / rate[c])} | " +
+        "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[c])}"
     end
     unless any
       $bot.put "PRIVMSG #{channel} :USD/CZK: " +
         "[Bitstamp] #{round(btc[:bs_usd])}/#{round(btc[:bs_usd] * rate[:usd])} | " +
-        "[BTC-e] #{round(btc[:btce_usd])}/#{round(btc[:btce_usd] * rate[:usd])}"
+        "[BTC-e] #{round(btc[:btce_usd])}/#{round(btc[:btce_usd] * rate[:usd])} | " +
+        "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[:usd])}/#{round(btc[:kraken_eur] * rate[:eur])}"
     end
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("

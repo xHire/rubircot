@@ -74,4 +74,9 @@ rescue EOFError, Errno::EPIPE
   puts "Error when reading from socket. Reconnecting..."
   $bot.quit
   retry
+rescue SocketError
+  puts 'Problem with socket. Waiting 2 minutes before reconnecting...'
+  $bot.quit
+  sleep 120
+  retry
 end
