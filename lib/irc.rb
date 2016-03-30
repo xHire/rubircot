@@ -25,6 +25,8 @@ class RubIRCot
   def quit
     self.put "PART ##{@config[:channel]} GoodBye!"
     @socket.close
+  rescue Errno::EPIPE
+    puts '[W] Quit: Socket is already dead'
   end
 
   def invitation
