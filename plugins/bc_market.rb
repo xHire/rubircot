@@ -9,7 +9,7 @@
 #####
 
 require 'rubygems'
-require 'active_support/json'
+require 'json'
 require 'csv'
 require 'open-uri'
 
@@ -64,8 +64,8 @@ class PluginBcMarket
     begin
       # obtain bitstamp info
       ticker = open('https://www.bitstamp.net/api/ticker/').readline.strip
-      buy[:bs] = ActiveSupport::JSON.decode(ticker)['bid'].to_f
-      sell[:bs] = ActiveSupport::JSON.decode(ticker)['ask'].to_f
+      buy[:bs] = JSON.parse(ticker)['bid'].to_f
+      sell[:bs] = JSON.parse(ticker)['ask'].to_f
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, bitstamp doesn't respond."
     rescue OpenURI::HTTPError => err
@@ -83,8 +83,8 @@ class PluginBcMarket
     begin
       # obtain btc-e info
       ticker = open('https://btc-e.com/api/2/btc_usd/ticker').readline.strip
-      buy[:btce] = ActiveSupport::JSON.decode(ticker)['ticker']['sell']
-      sell[:btce] = ActiveSupport::JSON.decode(ticker)['ticker']['buy']
+      buy[:btce] = JSON.parse(ticker)['ticker']['sell']
+      sell[:btce] = JSON.parse(ticker)['ticker']['buy']
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, btc-e doesn't respond."
     rescue OpenURI::HTTPError => err

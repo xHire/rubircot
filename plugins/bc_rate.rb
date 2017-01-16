@@ -9,7 +9,7 @@
 #####
 
 require 'rubygems'
-require 'active_support/json'
+require 'json'
 require 'csv'
 require 'open-uri'
 
@@ -63,7 +63,7 @@ class PluginBcRate
     begin
       # obtain USD/BTC rate -- bitstamp
       ticker = open('https://www.bitstamp.net/api/ticker/')
-      btc[:bs_usd] = ActiveSupport::JSON.decode(ticker.readline.strip)['last'].to_f
+      btc[:bs_usd] = JSON.parse(ticker.readline.strip)['last'].to_f
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, bitstamp doesn't respond."
     rescue OpenURI::HTTPError => err
@@ -80,7 +80,7 @@ class PluginBcRate
     begin
       # obtain USD/BTC rate -- btc-e
       ticker = open('https://btc-e.com/api/2/btc_usd/ticker')
-      btc[:btce_usd] = ActiveSupport::JSON.decode(ticker.readline.strip)['ticker']['last']
+      btc[:btce_usd] = JSON.parse(ticker.readline.strip)['ticker']['last']
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, btc-e doesn't respond."
     rescue OpenURI::HTTPError => err
@@ -97,7 +97,7 @@ class PluginBcRate
     begin
       # obtain EUR/BTC rate -- kraken
       ticker = open('https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR').readline.strip
-      btc[:kraken_eur] = ActiveSupport::JSON.decode(ticker)['result']['XXBTZEUR']['c'][0].to_f
+      btc[:kraken_eur] = JSON.parse(ticker)['result']['XXBTZEUR']['c'][0].to_f
     rescue Errno::ETIMEDOUT
       $bot.put "PRIVMSG #{channel} :Sorry, kraken doesn't respond."
     rescue OpenURI::HTTPError => err
