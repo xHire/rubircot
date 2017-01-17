@@ -33,6 +33,10 @@ trap "INT"  do; exit; end
 trap "TERM" do; exit; end
 trap "QUIT" do; exit; end
 
+### Set up output
+$stdout.sync = true
+$stderr.sync = true
+
 ### Say "hello" to output
 puts "RubIRCot v#{$version} started"
 
