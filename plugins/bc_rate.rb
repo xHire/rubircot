@@ -76,6 +76,7 @@ class PluginBcRate
     btc[:bs_usd] ||= 0.0
     end
 
+=begin
     threads << Thread.start do
     begin
       # obtain USD/BTC rate -- btc-e
@@ -92,6 +93,7 @@ class PluginBcRate
     end
     btc[:btce_usd] ||= 0.0
     end
+=end
 
     threads << Thread.start do
     begin
@@ -121,13 +123,13 @@ class PluginBcRate
       rate.include?(c) ? any = true : next
       $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: " +
         "[Bitstamp] #{round(btc[:bs_usd] * rate[:usd] / rate[c])} | " +
-        "[BTC-e] #{round(btc[:btce_usd] * rate[:usd] / rate[c])} | " +
+        #"[BTC-e] #{round(btc[:btce_usd] * rate[:usd] / rate[c])} | " +
         "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[c])}"
     end
     unless any
       $bot.put "PRIVMSG #{channel} :USD/CZK: " +
         "[Bitstamp] #{round(btc[:bs_usd])}/#{round(btc[:bs_usd] * rate[:usd])} | " +
-        "[BTC-e] #{round(btc[:btce_usd])}/#{round(btc[:btce_usd] * rate[:usd])} | " +
+        #"[BTC-e] #{round(btc[:btce_usd])}/#{round(btc[:btce_usd] * rate[:usd])} | " +
         "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[:usd])}/#{round(btc[:kraken_eur] * rate[:eur])}"
     end
   rescue Timeout::Error => e

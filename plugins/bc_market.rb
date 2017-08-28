@@ -79,6 +79,7 @@ class PluginBcMarket
     sell[:bs] ||= 0.0
     end
 
+=begin
     threads << Thread.start do
     begin
       # obtain btc-e info
@@ -97,6 +98,7 @@ class PluginBcMarket
     buy[:btce]  ||= 0.0
     sell[:btce] ||= 0.0
     end
+=end
 
     # wait for all threads
     threads.each do |t|
@@ -106,7 +108,7 @@ class PluginBcMarket
     # compile all the data
     $bot.put "PRIVMSG #{channel} :buy/sell: " +
       "[Bitstamp] #{round(buy[:bs])}/#{round(sell[:bs])} | " +
-      "[BTC-e] #{round(buy[:btce])}/#{round(sell[:btce])}"
+      ''#"[BTC-e] #{round(buy[:btce])}/#{round(sell[:btce])}"
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
     puts "[TRH] Exception was raised: #{e.inspect}"
