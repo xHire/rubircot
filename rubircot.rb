@@ -66,7 +66,7 @@ begin
       end
     end
   end
-rescue Timeout::Error
+rescue Timeout::Error, Errno::ETIMEDOUT
   puts "Connection timeouted. Reconnecting..."
   $bot.quit
   retry
