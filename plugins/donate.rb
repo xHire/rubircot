@@ -16,10 +16,10 @@ class PluginDonate
   def initialize
     @name = 'donate'
     @cmd  = 'donate'
-    @help = 'tells Bitcoin donation address'
+    @help = 'tells crypto donation addresses'
   end
 
   def run channel, params = ''
-    $bot.put "PRIVMSG #{channel} :Please send your donation to 1DsVrJXSrbgbL9AK6o49qDwrZ9gYZkDJK8"
+    $bot.put "PRIVMSG #{channel} :Please send your donation to 1Gx7EqWqoq6xTNKDFc5HWiz1ECNtWpubBo or Lh4wg6Dp8XhfXZtY97pMeBs1Kpxj9TkpZD"
   end
 end
