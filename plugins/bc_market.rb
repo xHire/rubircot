@@ -79,26 +79,24 @@ class PluginBcMarket
     sell[:bs] ||= 0.0
     end
 
-=begin
     threads << Thread.start do
     begin
-      # obtain btc-e info
-      ticker = open('https://btc-e.com/api/2/btc_usd/ticker').readline.strip
-      buy[:btce] = JSON.parse(ticker)['ticker']['sell']
-      sell[:btce] = JSON.parse(ticker)['ticker']['buy']
+      # obtain wex info
+      ticker = open('https://wex.nz/api/3/ticker/btc_usd').readline.strip
+      buy[:wex] = JSON.parse(ticker)['btc_usd']['sell']
+      sell[:wex] = JSON.parse(ticker)['btc_usd']['buy']
     rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, btc-e doesn't respond."
+      $bot.put "PRIVMSG #{channel} :Sorry, wex doesn't respond."
     rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, btc-e shouts HTTP error: #{err}"
+      $bot.put "PRIVMSG #{channel} :Sorry, wex shouts HTTP error: #{err}"
     rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, btc-e reset the connection"
+      $bot.put "PRIVMSG #{channel} :Sorry, wex reset the connection"
     rescue OpenSSL::SSL::SSLError
-      $bot.put "PRIVMSG #{channel} :Sorry, btc-e has some SSL difficulties"
+      $bot.put "PRIVMSG #{channel} :Sorry, wex has some SSL difficulties"
     end
-    buy[:btce]  ||= 0.0
-    sell[:btce] ||= 0.0
+    buy[:wex]  ||= 0.0
+    sell[:wex] ||= 0.0
     end
-=end
 
     # wait for all threads
     threads.each do |t|
@@ -108,7 +106,7 @@ class PluginBcMarket
     # compile all the data
     $bot.put "PRIVMSG #{channel} :buy/sell: " +
       "[Bitstamp] #{round(buy[:bs])}/#{round(sell[:bs])} | " +
-      ''#"[BTC-e] #{round(buy[:btce])}/#{round(sell[:btce])}"
+      "[WEX] #{round(buy[:wex])}/#{round(sell[:wex])}"
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
     puts "[TRH] Exception was raised: #{e.inspect}"

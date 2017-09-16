@@ -76,24 +76,22 @@ class PluginBcRate
     btc[:bs_usd] ||= 0.0
     end
 
-=begin
     threads << Thread.start do
     begin
-      # obtain USD/BTC rate -- btc-e
-      ticker = open('https://btc-e.com/api/2/btc_usd/ticker')
-      btc[:btce_usd] = JSON.parse(ticker.readline.strip)['ticker']['last']
+      # obtain USD/BTC rate -- wex
+      ticker = open('https://wex.nz/api/3/ticker/btc_usd')
+      btc[:wex_usd] = JSON.parse(ticker.readline.strip)['btc_usd']['last']
     rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, btc-e doesn't respond."
+      $bot.put "PRIVMSG #{channel} :Sorry, wex doesn't respond."
     rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, btc-e shouts HTTP error: #{err}"
+      $bot.put "PRIVMSG #{channel} :Sorry, wex shouts HTTP error: #{err}"
     rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, btc-e reset the connection"
+      $bot.put "PRIVMSG #{channel} :Sorry, wex reset the connection"
     rescue OpenSSL::SSL::SSLError
-      $bot.put "PRIVMSG #{channel} :Sorry, btc-e has some SSL difficulties"
+      $bot.put "PRIVMSG #{channel} :Sorry, wex has some SSL difficulties"
     end
-    btc[:btce_usd] ||= 0.0
+    btc[:wex_usd] ||= 0.0
     end
-=end
 
     threads << Thread.start do
     begin
@@ -123,14 +121,14 @@ class PluginBcRate
       rate.include?(c) ? any = true : next
       $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: " +
         "[Bitstamp] #{round(btc[:bs_usd] * rate[:usd] / rate[c])} | " +
-        #"[BTC-e] #{round(btc[:btce_usd] * rate[:usd] / rate[c])} | " +
-        "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[c])}"
+        "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[c])} | " +
+        "[WEX] #{round(btc[:wex_usd] * rate[:usd] / rate[c])}"
     end
     unless any
       $bot.put "PRIVMSG #{channel} :USD/CZK: " +
         "[Bitstamp] #{round(btc[:bs_usd])}/#{round(btc[:bs_usd] * rate[:usd])} | " +
-        #"[BTC-e] #{round(btc[:btce_usd])}/#{round(btc[:btce_usd] * rate[:usd])} | " +
-        "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[:usd])}/#{round(btc[:kraken_eur] * rate[:eur])}"
+        "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[:usd])}/#{round(btc[:kraken_eur] * rate[:eur])} | " +
+        "[WEX] #{round(btc[:wex_usd])}/#{round(btc[:wex_usd] * rate[:usd])}"
     end
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
