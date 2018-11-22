@@ -35,23 +35,6 @@ class PluginLcRate
 
     threads << Thread.start do
     begin
-      # obtain BTC/LTC rate -- wex
-      ticker = open('https://wex.nz/api/3/ticker/ltc_btc')
-      ltc[:wex_btc] = JSON.parse(ticker.readline.strip)['ltc_btc']['last']
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, wex doesn't respond."
-    rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, wex shouts HTTP error: #{err}"
-    rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, wex reset the connection"
-    rescue OpenSSL::SSL::SSLError
-      $bot.put "PRIVMSG #{channel} :Sorry, wex has some SSL difficulties"
-    end
-    ltc[:wex_btc] ||= 0.0
-    end
-
-    threads << Thread.start do
-    begin
       # obtain BTC/LTC rate -- kraken
       ticker = open('https://api.kraken.com/0/public/Ticker?pair=XLTCXXBT').readline.strip
       ltc[:kraken_btc] = JSON.parse(ticker)['result']['XLTCXXBT']['c'][0].to_f
@@ -74,8 +57,7 @@ class PluginLcRate
 
     # compile all the data
     $bot.put "PRIVMSG #{channel} :BTC: " +
-      "[Kraken] #{ltc[:kraken_btc]} | " +
-      "[WEX] #{ltc[:wex_btc]}"
+      "[Kraken] #{ltc[:kraken_btc]}"
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
     puts "[KURZ] Exception was raised: #{e.inspect}"

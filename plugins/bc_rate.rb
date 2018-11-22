@@ -78,23 +78,6 @@ class PluginBcRate
 
     threads << Thread.start do
     begin
-      # obtain USD/BTC rate -- wex
-      ticker = open('https://wex.nz/api/3/ticker/btc_usd')
-      btc[:wex_usd] = JSON.parse(ticker.readline.strip)['btc_usd']['last']
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, wex doesn't respond."
-    rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, wex shouts HTTP error: #{err}"
-    rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, wex reset the connection"
-    rescue OpenSSL::SSL::SSLError
-      $bot.put "PRIVMSG #{channel} :Sorry, wex has some SSL difficulties"
-    end
-    btc[:wex_usd] ||= 0.0
-    end
-
-    threads << Thread.start do
-    begin
       # obtain EUR/BTC rate -- kraken
       ticker = open('https://api.kraken.com/0/public/Ticker?pair=XXBTZEUR').readline.strip
       btc[:kraken_eur] = JSON.parse(ticker)['result']['XXBTZEUR']['c'][0].to_f
@@ -121,14 +104,12 @@ class PluginBcRate
       rate.include?(c) ? any = true : next
       $bot.put "PRIVMSG #{channel} :#{c.to_s.upcase}: " +
         "[Bitstamp] #{round(btc[:bs_usd] * rate[:usd] / rate[c])} | " +
-        "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[c])} | " +
-        "[WEX] #{round(btc[:wex_usd] * rate[:usd] / rate[c])}"
+        "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[c])}"
     end
     unless any
       $bot.put "PRIVMSG #{channel} :USD/CZK: " +
         "[Bitstamp] #{round(btc[:bs_usd])}/#{round(btc[:bs_usd] * rate[:usd])} | " +
-        "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[:usd])}/#{round(btc[:kraken_eur] * rate[:eur])} | " +
-        "[WEX] #{round(btc[:wex_usd])}/#{round(btc[:wex_usd] * rate[:usd])}"
+        "[Kraken] #{round(btc[:kraken_eur] * rate[:eur] / rate[:usd])}/#{round(btc[:kraken_eur] * rate[:eur])}"
     end
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("

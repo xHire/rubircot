@@ -79,25 +79,6 @@ class PluginBcMarket
     sell[:bs] ||= 0.0
     end
 
-    threads << Thread.start do
-    begin
-      # obtain wex info
-      ticker = open('https://wex.nz/api/3/ticker/btc_usd').readline.strip
-      buy[:wex] = JSON.parse(ticker)['btc_usd']['sell']
-      sell[:wex] = JSON.parse(ticker)['btc_usd']['buy']
-    rescue Errno::ETIMEDOUT
-      $bot.put "PRIVMSG #{channel} :Sorry, wex doesn't respond."
-    rescue OpenURI::HTTPError => err
-      $bot.put "PRIVMSG #{channel} :Sorry, wex shouts HTTP error: #{err}"
-    rescue Errno::ECONNRESET
-      $bot.put "PRIVMSG #{channel} :Sorry, wex reset the connection"
-    rescue OpenSSL::SSL::SSLError
-      $bot.put "PRIVMSG #{channel} :Sorry, wex has some SSL difficulties"
-    end
-    buy[:wex]  ||= 0.0
-    sell[:wex] ||= 0.0
-    end
-
     # wait for all threads
     threads.each do |t|
       t.join
