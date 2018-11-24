@@ -86,8 +86,7 @@ class PluginBcMarket
 
     # compile all the data
     $bot.put "PRIVMSG #{channel} :buy/sell: " +
-      "[Bitstamp] #{round(buy[:bs])}/#{round(sell[:bs])} | " +
-      "[WEX] #{round(buy[:wex])}/#{round(sell[:wex])}"
+      "[Bitstamp] #{round(buy[:bs])}/#{round(sell[:bs])}"
   rescue Timeout::Error => e
     $bot.put "PRIVMSG #{channel} :Sorry, timeout :c("
     puts "[TRH] Exception was raised: #{e.inspect}"
